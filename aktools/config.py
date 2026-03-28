@@ -9,7 +9,15 @@ from functools import lru_cache
 import logging
 
 from dotenv import load_dotenv
-from pydantic import BaseSettings, Field
+
+try:
+    from pydantic_settings import BaseSettings
+    from pydantic import Field
+except ImportError:
+    try:
+        from pydantic.v1 import BaseSettings, Field
+    except ImportError:
+        from pydantic import BaseSettings, Field
 
 load_dotenv()
 
