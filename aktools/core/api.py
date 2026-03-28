@@ -207,6 +207,24 @@ short_path = get_template_path()
 templates = Jinja2Templates(directory=short_path)
 
 
+def render_template_response(request: Request, template_name: str, context: dict):
+    """
+    兼容 Starlette 不同版本的 TemplateResponse 签名
+    """
+
+    try:
+        return templates.TemplateResponse(
+            request=request,
+            name=template_name,
+            context=context,
+        )
+    except TypeError:
+        return templates.TemplateResponse(
+            template_name,
+            context=context,
+        )
+
+
 @app_core.get(
     path="/show-temp/{interface}",
     response_class=HTMLResponse,
@@ -214,8 +232,9 @@ templates = Jinja2Templates(directory=short_path)
     summary="该接口主要展示 PyScript 游览器运行 Python 代码",
 )
 def akscript_temp(request: Request, interface: str):
-    return templates.TemplateResponse(
-        "akscript.html",
+    return render_template_response(
+        request=request,
+        template_name="akscript.html",
         context={
             "request": request,
             "ip": request.headers["host"],

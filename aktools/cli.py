@@ -69,7 +69,7 @@ def main(
     )
     typer.echo(f"当前的 AKTools 版本为：{aktools.__version__}，AKShare 版本为：{ak.__version__}")
     typer.echo(f"点击打开 HTTP API 主页：http://{host}:{port}/")
-    typer.echo(f"点击打开接口导览：http://{host}:{port}/docs")
+    typer.echo("Swagger 文档已关闭")
     if security_settings.api_token.strip():
         typer.echo(
             "请求 token 验证已启用，请在请求头中携带 "

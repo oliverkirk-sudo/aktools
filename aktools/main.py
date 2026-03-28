@@ -18,7 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from aktools.config import get_request_security_settings
-from aktools.core.api import app_core, templates
+from aktools.core.api import app_core, render_template_response
 from aktools.datasets import get_favicon_path, get_homepage_html
 from aktools.login import app_user_login
 from aktools.security import verify_request_token
@@ -33,6 +33,8 @@ app = FastAPI(
     title="欢迎访问 AKTools 为 AKShare 打造的 HTTP API 在线文档",
     description="AKTools 是 AKShare 的 HTTP API 工具, 主要目的是使 AKShare 的数据接口部署到服务器，从而让用户通过 HTTP 访问相关接口来获取所需要的数据",
     version=akshare.__version__,
+    docs_url=None,
+    openapi_url=None,
     redoc_url=None,
 )
 
@@ -53,8 +55,9 @@ async def favicon() -> FileResponse:
 @app.get(path="/", tags=["主页"], description="主要展示网站首页", summary="网站首页")
 async def get_homepage(request: Request):
     security_settings = get_request_security_settings()
-    return templates.TemplateResponse(
-        "homepage.html",  # 此处的 homepage.html 可以自定义，主要采用 jinja2 模版
+    return render_template_response(
+        request=request,
+        template_name="homepage.html",  # 此处的 homepage.html 可以自定义，主要采用 jinja2 模版
         context={
             "request": request,
             "ip_address": request.headers["host"],
