@@ -99,3 +99,10 @@ Changelog
 __title__ = "AKTools"
 __version__ = "0.0.91"
 __author__ = "AKFamily"
+from akshare_patch import patch,unpatch
+
+try:
+    patch()
+except Exception as e:
+    print(e)
+    unpatch()

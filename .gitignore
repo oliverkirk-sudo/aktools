@@ -6,7 +6,8 @@
 *.zip
 *.icls
 /_windows/
-
+.vsocde/
+.vscode/*
 /codestyles/
 
 # Temp
@@ -26,3 +27,6 @@ colors
 .DS_Store
 .pytest_cache
 ./log/*
+
+uv.lock
+.venv
