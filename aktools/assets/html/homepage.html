@@ -17,15 +17,26 @@
     <p style="text-align: center; color: blue">
         最新的 AKTools 版本为：{{at_latest_version}}，AKShare 版本为：{{ak_latest_version}}
     </p>
+    {% if api_token_enabled %}
+    <p style="text-align: center; color: darkred">
+        当前已启用请求 token 鉴权，请在请求头中携带 {{token_header_name}}: &lt;token&gt;
+    </p>
+    {% else %}
+    <p style="text-align: center; color: darkgreen">
+        当前未配置请求 token，仅允许本机访问 /api，远程请求会被自动拒绝
+    </p>
+    {% endif %}
     <p style="text-align: center; color: black">
         请通过：http://{{ip_address}}/api/public/{请求的数据接口} 来访问相关的数据接口
     </p>
     <p style="text-align: center; color: black">
         接口测试在线文档请访问：<a href="http://{{ip_address}}/docs">http://{{ip_address}}/docs</a>
     </p>
+    {% if not api_token_enabled %}
     <p style="text-align: center; color: black">
         测试链接请访问：<a href="http://{{ip_address}}/api/public/stock_zh_a_hist">http://{{ip_address}}/api/public/stock_zh_a_hist</a>
     </p>
+    {% endif %}
 
 </div>
 

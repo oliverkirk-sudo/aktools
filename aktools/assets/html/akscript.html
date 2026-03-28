@@ -31,7 +31,7 @@
 
 <body>
 <py-title>利用 PyScript 在游览器运行 AKShare 实现数据展示及下载功能</py-title>
-<div id="download" align="center"><a href="http://{{ ip }}/api/public/{{ interface }}" download="{{interface}}.json">点击下载</a>
+<div id="download" align="center"><a href="http://{{ ip }}/api/public/{{ interface }}{% if request_token %}?aktools_token={{ request_token }}{% endif %}" download="{{interface}}.json">点击下载</a>
 </div>
 <div id="table" align="center"></div>
 <py-script output="table">
@@ -40,7 +40,7 @@
 
     from pyodide.http import open_url
 
-    url = "http://{{ ip }}/api/public/{{ interface }}" # 本地 AKTools 搭建
+    url = "http://{{ ip }}/api/public/{{ interface }}{% if request_token %}?aktools_token={{ request_token }}{% endif %}" # 本地 AKTools 搭建
 
     temp_df = pd.read_json(open_url(url))
     # temp_df['调整日期'] = pd.to_datetime(temp_df['调整日期']).dt.date

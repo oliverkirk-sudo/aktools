@@ -9,7 +9,7 @@ from functools import lru_cache
 import logging
 
 from dotenv import load_dotenv
-from pydantic import BaseSettings
+from pydantic import BaseSettings, Field
 
 load_dotenv()
 
@@ -41,6 +41,16 @@ class AuthSettings(Settings):
     access_token_expire_minutes: int = 30
 
 
+class RequestSecuritySettings(Settings):
+    """
+    请求安全配置类
+    """
+
+    api_token: str = Field(default="", env="AKTOOLS_API_TOKEN")
+    token_header_name: str = Field(default="X-AKTOOLS-TOKEN", env="AKTOOLS_TOKEN_HEADER")
+    trust_proxy_headers: bool = Field(default=False, env="AKTOOLS_TRUST_PROXY_HEADERS")
+
+
 class LocalSettings(Settings):
     mysql_db: str = "score"
     mysql_user: str = "root"
@@ -69,4 +79,11 @@ def get_local_settings() -> Settings:
 def get_auth_settings() -> Settings:
     settings = AuthSettings()
     log.info(f"加载授权环境变量成功")
+    return settings
+
+
+@lru_cache()
+def get_request_security_settings() -> Settings:
+    settings = RequestSecuritySettings()
+    log.info("加载请求 token 配置成功")
     return settings

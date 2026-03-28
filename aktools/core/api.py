@@ -19,6 +19,7 @@ from fastapi.templating import Jinja2Templates
 
 from aktools.datasets import get_pyscript_html, get_template_path
 from aktools.login.user_login import User, get_current_active_user
+from aktools.security import QUERY_TOKEN_NAME
 
 app_core = APIRouter()
 
@@ -37,6 +38,19 @@ logger.addHandler(handler)
 
 # 使用日志记录器记录信息
 logger.info('这是一个信息级别的日志消息')
+
+
+def build_query_string(request: Request) -> str:
+    """
+    构建排除安全字段后的查询字符串
+    """
+
+    filtered_query_params = [
+        (key, value)
+        for key, value in request.query_params.multi_items()
+        if key != QUERY_TOKEN_NAME
+    ]
+    return urllib.parse.unquote(urllib.parse.urlencode(filtered_query_params, doseq=True))
 
 
 @app_core.get("/private/{item_id}", description="私人接口", summary="该接口主要提供私密访问来获取数据")
@@ -58,7 +72,7 @@ def root(
     :rtype: json
     """
     interface_list = dir(ak)
-    decode_params = urllib.parse.unquote(str(request.query_params))
+    decode_params = build_query_string(request)
     # print(decode_params)
     if item_id not in interface_list:
         return JSONResponse(
@@ -68,7 +82,7 @@ def root(
             },
         )
     eval_str = decode_params.replace("&", '", ').replace("=", '="') + '"'
-    if not bool(request.query_params):
+    if not decode_params:
         try:
             received_df = eval("ak." + item_id + "()")
             if received_df is None:
@@ -117,7 +131,7 @@ def root(request: Request, item_id: str):
     :rtype: json
     """
     interface_list = dir(ak)
-    decode_params = urllib.parse.unquote(str(request.query_params))
+    decode_params = build_query_string(request)
     # print(decode_params)
     if item_id not in interface_list:
         logger.info("未找到该接口，请升级 AKShare 到最新版本并在文档中确认该接口的使用方式：https://akshare.akfamily.xyz")
@@ -138,7 +152,7 @@ def root(request: Request, item_id: str):
     else:
         eval_str = decode_params.replace("&", '", ').replace("=", '="') + '"'
         eval_str = eval_str.replace("+", " ")  # 处理传递的参数中带空格的情况
-    if not bool(request.query_params):
+    if not decode_params:
         try:
             received_df = eval("ak." + item_id + "()")
             if received_df is None:
@@ -206,6 +220,7 @@ def akscript_temp(request: Request, interface: str):
             "request": request,
             "ip": request.headers["host"],
             "interface": interface,
+            "request_token": request.query_params.get(QUERY_TOKEN_NAME, ""),
         },
     )
 

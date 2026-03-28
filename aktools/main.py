@@ -13,13 +13,15 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import akshare
 import aktools
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
+from aktools.config import get_request_security_settings
 from aktools.core.api import app_core, templates
 from aktools.datasets import get_favicon_path, get_homepage_html
 from aktools.login import app_user_login
+from aktools.security import verify_request_token
 from aktools.utils import get_latest_version
 from aktools.schema.version import VersionBase
 
@@ -50,6 +52,7 @@ async def favicon() -> FileResponse:
 
 @app.get(path="/", tags=["主页"], description="主要展示网站首页", summary="网站首页")
 async def get_homepage(request: Request):
+    security_settings = get_request_security_settings()
     return templates.TemplateResponse(
         "homepage.html",  # 此处的 homepage.html 可以自定义，主要采用 jinja2 模版
         context={
@@ -59,6 +62,8 @@ async def get_homepage(request: Request):
             "at_current_version": aktools.__version__,
             "ak_latest_version": get_latest_version("akshare"),
             "at_latest_version": get_latest_version("aktools"),
+            "api_token_enabled": bool(security_settings.api_token.strip()),
+            "token_header_name": security_settings.token_header_name,
         },
     )
 
@@ -89,7 +94,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(app_core, prefix="/api", tags=["数据接口"])
+app.include_router(
+    app_core,
+    prefix="/api",
+    tags=["数据接口"],
+    dependencies=[Depends(verify_request_token)],
+)
 app.include_router(app_user_login, prefix="/auth", tags=["登录接口"])
 
 if __name__ == "__main__":
